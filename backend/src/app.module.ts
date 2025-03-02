@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
 
 // Import your entities here
 import { User } from './entities/user.entity';
@@ -13,6 +14,10 @@ import { ReportChart } from './entities/report-chart.entity';
 import { ChatContext } from './entities/chat-context.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+// import { ReportsController } from './controllers/reports.controller';
+// import { ReportsService } from './services/reports.service';
+import { AuthController } from './controllers/auth_controller';
+import { AuthService } from './services/auth.service';
 
 @Module({
   imports: [
@@ -51,8 +56,22 @@ import { AppService } from './app.service';
       ReportChart,
       ChatContext,
     ]),
+
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'someSecretKey',
+      signOptions: { expiresIn: '6h' },
+    }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [
+    AppController,
+    // ReportsController,
+    AuthController,
+  ],
+
+  providers: [
+    AppService,
+    // ReportsService,
+    AuthService,
+  ],
 })
-export class AppModule {}
+export class AppModule { }
