@@ -13,6 +13,9 @@ import { ReportChart } from './entities/report-chart.entity';
 import { ChatContext } from './entities/chat-context.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { PdfUploadController } from './controllers/pdf-upload';
+import { MinioModule } from './minio/minio.module';
+import { GeminiService } from './services/gemini.service';
 
 @Module({
   imports: [
@@ -51,8 +54,9 @@ import { AppService } from './app.service';
       ReportChart,
       ChatContext,
     ]),
+    MinioModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, PdfUploadController],
+  providers: [AppService, GeminiService, ],
 })
 export class AppModule {}

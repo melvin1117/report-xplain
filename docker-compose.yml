@@ -16,6 +16,8 @@ services:
       - MINIO_USE_SSL=false
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=minioadmin
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - BUCKET_NAME=report-uploads
     depends_on:
       - db
       - minio
