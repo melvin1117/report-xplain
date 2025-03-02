@@ -11,7 +11,8 @@ import { ReportSection } from './entities/report-section.entity';
 import { ReportMetric } from './entities/report-metric.entity';
 import { ReportChart } from './entities/report-chart.entity';
 import { ChatContext } from './entities/chat-context.entity';
-import { CeleryModule } from './celery/celery.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -24,9 +25,9 @@ import { CeleryModule } from './celery/celery.module';
       type: 'postgres',
       host: process.env.DB_HOST || 'db',
       port: parseInt(process.env.DB_PORT) || 5432,
-      username: process.env.POSTGRES_USER || 'admin',
-      password: process.env.POSTGRES_PASSWORD || 'password',
-      database: process.env.POSTGRES_DB || 'reportdb',
+      username: process.env.DB_USER || 'user',
+      password: process.env.DB_PASSWORD || 'password',
+      database: process.env.DB_NAME || 'reportdb',
       entities: [
         User,
         Report,
@@ -50,9 +51,8 @@ import { CeleryModule } from './celery/celery.module';
       ReportChart,
       ChatContext,
     ]),
-    CeleryModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

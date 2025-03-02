@@ -1,55 +1,41 @@
 version: '3.8'
+
 services:
-  backend:
+  report-xplain-be:
     build: ./backend
-    container_name: nestjs-backend
     ports:
-      - "3000:3000"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    env_file:
-      - ./.env
+      - "5000:5000"
     environment:
-      - NODE_ENV=development
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=reportdb
+      - DB_HOST=db
+      - DB_PORT=5432
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_USE_SSL=false
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
     depends_on:
-      - postgres
+      - db
       - minio
-      - rabbitmq
     command: npm run start:dev
 
-  backend-worker:
-    build: ./backend
-    container_name: nestjs-worker
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    env_file:
-      - ./.env
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      - postgres
-      - minio
-      - rabbitmq
-    command: npm run celery-worker
-
-  frontend:
+  report:
     build: ./frontend
-    container_name: angular-frontend
     ports:
       - "80:4200"
-    environment:
-      - NODE_ENV=development
-
-  postgres:
-    image: postgres:13
-    container_name: postgres-db
+    depends_on:
+      - db
+      - report-xplain-be
+  
+  db:
+    image: postgres:15-alpine
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: reportdb
     ports:
       - "5432:5432"
     volumes:
@@ -57,12 +43,9 @@ services:
 
   adminer:
     image: adminer
-    container_name: adminer
     restart: always
     ports:
       - "8080:8080"
-    depends_on:
-      - postgres
 
   minio:
     image: minio/minio
@@ -71,22 +54,12 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_USER: "minioadmin"
+      MINIO_ROOT_PASSWORD: "minioadmin"
     command: server /data --console-address ":9001"
     volumes:
       - miniodata:/data
 
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmqdata:/var/lib/rabbitmq
-
 volumes:
   pgdata:
   miniodata:
-  rabbitmqdata:
