@@ -13,9 +13,14 @@ import { ReportChart } from './entities/report-chart.entity';
 import { ChatContext } from './entities/chat-context.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { PdfUploadController } from './controllers/pdf-upload';
+import { MinioModule } from './minio/minio.module';
+import { GeminiService } from './services/gemini.service';
 import { AuthController } from './controllers/auth_controller';
 import { AuthService } from './services/auth.service';
 import { JwtModule } from '@nestjs/jwt';
+import { ReportController } from './controllers/reportController';
+import { ReportService } from './services/reportService';
 
 @Module({
   imports: [
@@ -54,12 +59,23 @@ import { JwtModule } from '@nestjs/jwt';
       ReportChart,
       ChatContext,
     ]),
+    MinioModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'SampleSecretKeyHere',
       signOptions: { expiresIn: '6h' },
     }),
   ],
-  controllers: [AppController, AuthController,],
-  providers: [AppService, AuthService,],
+  controllers: [
+                AppController,
+                PdfUploadController,
+                AuthController,
+                ReportController,
+              ],
+  providers: [
+    AppService,
+    GeminiService,
+    AuthService,
+    ReportService,
+  ],
 })
 export class AppModule { }
