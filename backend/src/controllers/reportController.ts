@@ -43,7 +43,7 @@ export class ReportController {
   }
 
   // GET a specific report for a user: /reports/user/:userId/:reportId
-  @Get('user/:userId/:reportId')
+  @Get('report/:reportId/user/:userId')
   async getReportByUser(
     @Param('userId') userId: string,
     @Param('reportId') reportId: string,
@@ -55,7 +55,7 @@ export class ReportController {
   }
 
   // GET PDF for a given report: /reports/download/:reportId
-  @Get('download/:reportId')
+  @Get('report/:reportId/download')
   async downloadPdf(@Param('reportId') reportId: string, @Res() res: Response) {
     const numericReportId = parseInt(reportId, 10);
     // Fetch the report record to get the pdf_url (i.e., the unique filename)
