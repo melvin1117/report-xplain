@@ -15,17 +15,16 @@ export class AuthService {
 
     async signup(userData: {
         name?: string;
-        username: string;
         email: string;
         password: string;
     }) {
-        // Check if a user already exists with the same email or username
+        // Check if a user already exists with the same email
         const existingUser = await this.usersRepo.findOne({
-            where: [{ email: userData.email }, { username: userData.username }],
+            where: [{ email: userData.email }],
         });
         if (existingUser) {
             throw new HttpException(
-                'Email or Username already in use',
+                'Email already in use',
                 HttpStatus.BAD_REQUEST,
             );
         }
@@ -36,7 +35,6 @@ export class AuthService {
         // Create and save the new user
         const newUser = this.usersRepo.create({
             name: userData.name,
-            username: userData.username,
             email: userData.email,
             password_hash: hashedPassword,
         });
@@ -49,7 +47,7 @@ export class AuthService {
         // Find user by email and select the password hash for verification
         const user = await this.usersRepo.findOne({
             where: { email: credentials.email },
-            select: ['id', 'name', 'username', 'email', 'password_hash'],
+            select: ['id', 'name', 'email', 'password_hash'],
         });
 
         if (!user) {
@@ -66,7 +64,7 @@ export class AuthService {
         }
 
         // Create JWT payload and sign the token
-        const payload = { id: user.id, email: user.email, username: user.username };
+        const payload = { id: user.id, email: user.email };
         const token = this.jwtService.sign(payload, { expiresIn: '6h' });
 
         return {
@@ -74,7 +72,6 @@ export class AuthService {
             user: {
                 id: user.id,
                 name: user.name,
-                username: user.username,
                 email: user.email,
             },
         };

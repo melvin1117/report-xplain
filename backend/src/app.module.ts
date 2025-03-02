@@ -18,6 +18,7 @@ import { AppService } from './app.service';
 // import { ReportsService } from './services/reports.service';
 import { AuthController } from './controllers/auth_controller';
 import { AuthService } from './services/auth.service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -56,9 +57,8 @@ import { AuthService } from './services/auth.service';
       ReportChart,
       ChatContext,
     ]),
-
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'someSecretKey',
+      secret: process.env.JWT_SECRET || 'SampleSecretKeyHere',
       signOptions: { expiresIn: '6h' },
     }),
   ],
@@ -67,7 +67,6 @@ import { AuthService } from './services/auth.service';
     // ReportsController,
     AuthController,
   ],
-
   providers: [
     AppService,
     // ReportsService,
