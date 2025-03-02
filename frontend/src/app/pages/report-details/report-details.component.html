@@ -1,0 +1,111 @@
+<div class="report-details-container" *ngIf="reportData">
+  <!-- LEFT COLUMN: Data, friendly content, metrics, charts -->
+  <div class="report-left">
+    <!-- METADATA -->
+    <div class="metadata-section">
+      <h1 class="report-name">{{ reportData.report_name }}</h1>
+      <div class="metadata-grid">
+        <p *ngIf="reportData.report_type"><strong>Type:</strong> {{ reportData.report_type }}</p>
+        <p *ngIf="reportData.metadata.patient_name"><strong>Patient:</strong> {{ reportData.metadata.patient_name }}</p>
+        <p *ngIf="reportData.metadata.age"><strong>Age:</strong> {{ reportData.metadata.age }}</p>
+        <p *ngIf="reportData.metadata.gender"><strong>Gender:</strong> {{ reportData.metadata.gender }}</p>
+        <p *ngIf="reportData.created_at"><strong>Created:</strong> {{ reportData.created_at | date: 'medium' }}</p>
+        <p *ngIf="reportData.metadata.referred_by"><strong>Referred By:</strong> {{ reportData.metadata.referred_by }}</p>
+      </div>
+    </div>
+
+    <!-- SUMMARIES (Medical, Friendly, AI) -->
+    <div class="summaries-section">
+      <h2>Summaries</h2>
+      <div class="summary-grid">
+        <div class="summary-box medical">
+          <h3>Medical Summary</h3>
+          <p>{{ reportData.summary.medical_summary }}</p>
+        </div>
+        <div class="summary-box friendly">
+          <h3>Friendly Summary</h3>
+          <p>{{ reportData.summary.friendly_summary }}</p>
+        </div>
+        <div class="summary-box ai">
+          <h3>AI Diagnosis</h3>
+          <p>{{ reportData.summary.ai_diagnosis_summary }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTIONS & METRICS -->
+    <div class="sections-container">
+      <div class="section" *ngFor="let section of reportData.sections">
+        <h2 class="section-title">{{ section.section_title }}</h2>
+        <p class="section-desc">{{ section.description }}</p>
+
+        <div class="metric" *ngFor="let metric of section.metrics">
+          <!-- Metric Header with Friendly Name, Info Icon, and Metric Name -->
+          <div class="metric-header">
+            <h3 class="metric-friendly-name">
+              {{ metric.metric_friendly_name }}
+              <span class="info-icon" [title]="metric.medical_terminology">i</span>
+            </h3>
+            <span class="metric-name">({{ metric.metric_name }})</span>
+          </div>
+
+          <!-- Friendly Interpretation below the metric name -->
+          <p class="friendly-interpretation">
+            {{ metric.friendly_interpretation }}
+          </p>
+
+          <!-- Chart.js horizontal bar -->
+          <div class="metric-chart">
+            <canvas
+              #metricCanvas
+              [attr.data-metric]="metric.metric_name"
+              style="width: 100%; height: 120px;"
+            ></canvas>
+          </div>
+
+          <!-- If normal, show motivational message (green box) -->
+          <div
+            class="motivational-message"
+            *ngIf="isMetricNormal(metric.value, metric.reference_min, metric.reference_max)
+                   && metric.motivational_message"
+          >
+            {{ metric.motivational_message }}
+          </div>
+
+          <!-- If out-of-range, show suggestions (orange box) -->
+          <div
+            class="suggestions"
+            *ngIf="!isMetricNormal(metric.value, metric.reference_min, metric.reference_max)
+                   && metric.suggestions"
+          >
+            <strong>Suggestions:</strong> {{ metric.suggestions }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADDITIONAL CHARTS (Pie, Bar, etc.) -->
+    <div class="charts-container" *ngIf="reportData.charts?.length">
+      <h2>Additional Charts</h2>
+      <div class="chart-block" *ngFor="let chartObj of reportData.charts; let i = index">
+        <h3>{{ chartObj.chart_title }}</h3>
+        <p class="chart-desc">{{ chartObj.friendly_description }}</p>
+
+        <!-- Each chart gets its own canvas -->
+        <canvas
+          #additionalCanvas
+          style="width: 100%; height: 300px;"
+        ></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: PDF viewer -->
+  <div class="report-right" *ngIf="pdfSrc">
+    <pdf-viewer
+      [src]="pdfSrc"
+      style="width: 100%; height: 100%;"
+      [render-text]="true"
+    ></pdf-viewer>
+  </div>
+</div>

@@ -1,0 +1,70 @@
+<div class="my-container dashboard-container">
+  <!-- Upload Section -->
+  <div class="upload-section"
+       (drop)="onDrop($event)"
+       (dragover)="onDragOver($event)"
+       (click)="fileInput.click()">
+    <p>Drag & drop your PDF file here or click to select</p>
+    <input
+      type="file"
+      #fileInput
+      accept="application/pdf"
+      style="display: none"
+      (change)="onFileSelected($event)"
+    />
+  </div>
+
+  <!-- Loading Indicator -->
+  <div class="loading-container" *ngIf="loading">
+    <!-- Angular Material spinner -->
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <!-- Reports List Section -->
+  <div class="reports-list" *ngIf="!loading && reports && reports.length > 0; else noReports">
+    <mat-card
+      class="report-card"
+      *ngFor="let report of reports"
+      (click)="openReport(report.id)">
+      <!-- Left Panel (Colored Background) -->
+      <div class="card-left">
+        <span class="label">Report Type</span>
+        <h2 class="report-type">{{ report.report_type }}</h2>
+      </div>
+
+      <!-- Right Panel (White Background) -->
+      <div class="card-right">
+        <div class="report-header">
+          <h2 class="report-name">{{ report.report_name }}</h2>
+        </div>
+        <p class="patient-info">
+          <strong>Patient:</strong>
+          {{ report.metadata.patient_name }}
+          (Age: {{ report.metadata.age }}, Gender: {{ report.metadata.gender }})
+        </p>
+        <p class="created-at">
+          <strong>Created:</strong>
+          {{ report.created_at | date: 'medium' }}
+        </p>
+        <p class="additional-info">
+          <strong>Registration No:</strong>
+          {{ report.metadata.registration_number }}
+        </p>
+        <p class="referral-info">
+          <strong>Referred By:</strong>
+          {{ report.metadata.referred_by }}
+        </p>
+        <div class="actions">
+          <button mat-raised-button color="primary">Open</button>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- Template for when there are no reports -->
+  <ng-template #noReports>
+    <div class="empty-message" *ngIf="!loading">
+      <p>No reports available.</p>
+    </div>
+  </ng-template>
+</div>
