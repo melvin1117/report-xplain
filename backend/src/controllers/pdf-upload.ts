@@ -1,8 +1,17 @@
-import { Controller, Post, UploadedFile, UseInterceptors, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Param,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as Minio from 'minio';
 import { GeminiService } from 'src/services/gemini.service';
 import { MinioService } from 'src/minio/minio.service';
+import { ReportService } from 'src/services/reportService'; // Import ReportService
 import { v4 as uuidv4 } from 'uuid';
 
 @Controller('pdf')
@@ -12,13 +21,14 @@ export class PdfUploadController {
 
   constructor(
     private readonly minioService: MinioService,
-    private readonly geminiService: GeminiService
+    private readonly geminiService: GeminiService,
+    private readonly reportService: ReportService, // Inject ReportService
   ) {
     this.minioService.createBucketIfNotExists(this.bucketName);
     this.minioClient = this.minioService.getClient();
   }
 
-  @Post('upload')
+  @Post('upload/user/:id')
   @UseInterceptors(
     FileInterceptor('file', {
       fileFilter: (req, file, callback) => {
@@ -29,15 +39,20 @@ export class PdfUploadController {
       },
     }),
   )
-  async uploadPdf(@UploadedFile() file: Express.Multer.File) {
+  async uploadPdf(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id') id: string,
+  ) {
+    const userId = parseInt(id, 10);
     if (!file) {
       throw new BadRequestException('File is required');
     }
-    console.log('After file validation');
+    console.log('After file validation, user id:', userId);
 
     // Upload file to Minio
+    let uniqueFileName: string;
     try {
-      const uniqueFileName = `${uuidv4()}-${file.originalname}`;
+      uniqueFileName = `${uuidv4()}-${file.originalname}`;
 
       await new Promise((resolve, reject) => {
         this.minioClient.putObject(
@@ -57,27 +72,26 @@ export class PdfUploadController {
       throw new InternalServerErrorException('Error uploading file to storage: ' + error.message);
     }
 
-    // Read query from query.txt with absolute path
+    // Read query from hardcoded string (or load from a file if needed)
     let query: string;
-    try {      
-      // Read query from query.txt
+    try {
       console.log('Resolved query file path:');
       query = `You are provided with a medical lab report in PDF format. Your task is to extract all the relevant information from the report and generate a detailed JSON response that presents both the original technical (medical) details and a friendly, human-centric interpretation. The report may be of any type (e.g., CBC, metabolic panels, imaging, etc.), so your response should be flexible enough to accommodate different lab report structures.
-
+      
               Your output must include the following sections:
-
+      
               1. *Metadata:* Extract and include all available personal and report details such as:
                 - Patient name, age, gender, referred by, registration number, and any other details provided.
                 - Report dates (e.g., registered on, collected on, received on, reported on).
                 - Lab details including lab name, lab incharge, pathologist, location, etc. (if available).
-
+      
               2. *Report Information:* Include identifiers such as reportId and patientId, and specify the reportType and one more field reportName as 'Patient name - reportType'
-
+      
               3. *Summaries:* Generate three summaries:
                 - medicalSummary: A summary using the original technical language from the report.
                 - friendlySummary: A plain language version of the summary that makes the content easily understandable.
                 - aiDiagnosisSummary: An AI-generated summary that highlights key diagnoses, findings, or insights.
-
+      
               4. *Sections:* Organize the lab data into sections (e.g., “Hematology - Complete Blood Count” or “Metabolic Panel”) as applicable. Each section must contain:
                 - A description of what the section covers, in both technical and friendly terms.
                 - A list of metrics where each metric contains:
@@ -89,17 +103,18 @@ export class PdfUploadController {
                   - status: Indicate if the metric is Normal, Low, or High.
                   - suggestions: Provide specific, actionable recommendations (dietary, lifestyle, etc.) if the value is not optimal.
                   - motivationalMessage: Offer positive feedback or insight on what the patient might be doing well that contributes to a normal result.
-
-              5. *Charts:* Provide at least two types of charts based on the data:
+      
+              5. *Charts:* Try to provide three types of charts based on the data:
                 - One chart (e.g., a pie chart) that illustrates the distribution of key sub-parameters (e.g., differential counts in a CBC or any other logical grouping relevant to the report).
                 - A second chart (e.g., a bullet chart) that compares one or more key parameters against their normal reference ranges, with a friendly description of what the visualization indicates.
-
+                - A third chart (e.g., a bar chart) that shows the comparision of diffrent values.
+      
               6. *Overall Suggestions:* Include a summary with actionable recommendations regarding dietary improvements, lifestyle changes, or further medical follow-ups based on the overall findings.
-
+      
               7. *Chat Context:* Provide context to seed a chatbot that can answer follow-up questions. This context should summarize the key findings in a concise way.
-
+      
               Use the following JSON format as your blueprint:
-
+      
               {
                 "metadata": {
                   "patientName": "Example Name",
@@ -185,7 +200,7 @@ export class PdfUploadController {
                   }
                 ]
               }
-
+      
               Please output the complete JSON response following the above structure using the data extracted from the provided PDF report.`;
 
     } catch (error) {
@@ -202,6 +217,16 @@ export class PdfUploadController {
       throw new InternalServerErrorException('Error processing PDF with Gemini API');
     }
 
-    return { message: 'File processed successfully', data: processedData };
+    // Call the reports API to save the processed data in the DB
+    let createdReport;
+    try {
+      createdReport = await this.reportService.createReport(processedData, uniqueFileName, userId);
+      console.log('Report created successfully:', createdReport);
+    } catch (error) {
+      console.error('Error creating report in DB:', error);
+      throw new InternalServerErrorException('Error creating report in DB');
+    }
+
+    return { message: 'File processed and report created successfully', data: createdReport };
   }
 }

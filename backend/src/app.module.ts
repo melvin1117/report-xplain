@@ -19,6 +19,8 @@ import { GeminiService } from './services/gemini.service';
 import { AuthController } from './controllers/auth_controller';
 import { AuthService } from './services/auth.service';
 import { JwtModule } from '@nestjs/jwt';
+import { ReportController } from './controllers/reportController';
+import { ReportService } from './services/reportService';
 
 @Module({
   imports: [
@@ -67,11 +69,13 @@ import { JwtModule } from '@nestjs/jwt';
                 AppController,
                 PdfUploadController,
                 AuthController,
+                ReportController,
               ],
   providers: [
     AppService,
     GeminiService,
     AuthService,
+    ReportService,
   ],
 })
 export class AppModule { }
