@@ -1,0 +1,112 @@
+/* Container padding */
+.dashboard-container {
+  margin-top: 20px;
+}
+
+/* Upload Section (drag-and-drop area) */
+.upload-section {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 24px;
+
+  &:hover {
+    background-color: #f9f9f9;
+  }
+}
+
+/* Reports List Section: 2 columns max, then 1 column on smaller screens */
+.reports-list {
+  display: grid;
+  /* Force a maximum of 2 columns */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+
+  /* On narrower screens, switch to 1 column */
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Individual Card */
+.report-card {
+  display: flex;
+  flex-direction: row;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Left Panel: Colored background */
+  .card-left {
+    background-color: #4b3f6b; /* Adjust to your preferred color */
+    color: #fff;
+    width: 35%;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.8;
+    }
+
+    .report-type {
+      font-size: 1.4rem;
+      margin-top: 8px;
+      line-height: 1.2;
+    }
+  }
+
+  /* Right Panel: White background */
+  .card-right {
+    background-color: #fff;
+    width: 65%;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .report-header {
+      margin-bottom: 12px;
+
+      .report-name {
+        font-size: 1.6rem;
+        margin: 0;
+        color: #333;
+      }
+    }
+
+    .patient-info,
+    .created-at,
+    .additional-info,
+    .referral-info {
+      margin: 4px 0;
+      font-size: 1rem;
+      color: #555;
+    }
+
+    .actions {
+      margin-top: 16px;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}
+
+.empty-message {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 1.2rem;
+  color: #555;
+}

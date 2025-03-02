@@ -25,8 +25,9 @@ export class AuthService {
     const token = this.cookieService.get('authToken');
     const name = this.cookieService.get('userName');
     const email = this.cookieService.get('userEmail');
+    const id = this.cookieService.get('userId');
     if (token && name && email) {
-      this.userSubject.next({ name, email });
+      this.userSubject.next({ name, email, id });
     }
   }
 
@@ -62,11 +63,13 @@ export class AuthService {
           this.cookieService.set('authToken', response.accessToken, expires, '/', undefined, true, 'Lax');
           this.cookieService.set('userName', response.user.name, expires, '/', undefined, true, 'Lax');
           this.cookieService.set('userEmail', response.user.email, expires, '/', undefined, true, 'Lax');
+          this.cookieService.set('userId', response.user.id, expires, '/', undefined, true, 'Lax');
     
           // Update the current user.
           this.userSubject.next({
             name: response.user.name,
-            email: response.user.email
+            email: response.user.email,
+            id: response.user.id,
           });
         })
       );
@@ -81,6 +84,7 @@ export class AuthService {
     this.cookieService.delete('authToken', '/');
     this.cookieService.delete('userName', '/');
     this.cookieService.delete('userEmail', '/');
+    this.cookieService.delete('userId', '/');
   }
 
   /**
