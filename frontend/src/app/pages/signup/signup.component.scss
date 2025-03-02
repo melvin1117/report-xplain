@@ -1,0 +1,54 @@
+.signup-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    height: calc(100vh - 64px);
+    /* Use the poster image as the background */
+    background: url('https://img.freepik.com/free-vector/gradient-blur-pink-blue-abstract-background_53876-117324.jpg?t=st=1740896244~exp=1740899844~hmac=b9fd48ea70db9581bb3a7f31d43e809a839a4f229912f5141459fc6dc1e1f13a&w=1380') no-repeat center center;
+    background-size: cover;
+  }
+  
+  mat-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    /* Glassmorphism effect */
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 10px;
+  }
+  
+  mat-card-title {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 50px;
+  }
+  
+  .error-message {
+    color: red;
+    margin: 10px 0;
+  }
+  
+  mat-form-field {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    mat-card {
+      padding: 16px;
+      margin: 0 10px;
+    }
+    mat-card-title {
+      font-size: 1.5rem;
+    }
+    button {
+      width: 100%;
+    }
+  }
+  
