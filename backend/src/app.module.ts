@@ -13,6 +13,9 @@ import { ReportChart } from './entities/report-chart.entity';
 import { ChatContext } from './entities/chat-context.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthController } from './controllers/auth_controller';
+import { AuthService } from './services/auth.service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -51,8 +54,12 @@ import { AppService } from './app.service';
       ReportChart,
       ChatContext,
     ]),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'SampleSecretKeyHere',
+      signOptions: { expiresIn: '6h' },
+    }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, AuthController,],
+  providers: [AppService, AuthService,],
 })
-export class AppModule {}
+export class AppModule { }

@@ -60,13 +60,13 @@ export class AuthService {
           
           // Set cookies with a 6-hour expiration.
           this.cookieService.set('authToken', response.accessToken, expires, '/', undefined, true, 'Lax');
-          this.cookieService.set('userName', response.name, expires, '/', undefined, true, 'Lax');
-          this.cookieService.set('userEmail', response.email, expires, '/', undefined, true, 'Lax');
+          this.cookieService.set('userName', response.user.name, expires, '/', undefined, true, 'Lax');
+          this.cookieService.set('userEmail', response.user.email, expires, '/', undefined, true, 'Lax');
     
           // Update the current user.
           this.userSubject.next({
-            name: response.name,
-            email: response.email
+            name: response.user.name,
+            email: response.user.email
           });
         })
       );

@@ -16,7 +16,6 @@ export class AuthController {
         @Body()
         userData: {
             name?: string;
-            username: string;
             email: string;
             password: string;
         },

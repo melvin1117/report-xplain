@@ -1,10 +1,10 @@
 export interface User {
+  id?: number;
   name: string;
   email: string;
 }
 
 export interface LoginResponse {
   accessToken: string;
-  name: string;
-  email: string;
+  user: User;
 }
