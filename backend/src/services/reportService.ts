@@ -1,7 +1,7 @@
 // services/report.service.ts
 
-import { Injectable } from '@nestjs/common'; // If using NestJS
-import { InjectRepository } from '@nestjs/typeorm'; // If using NestJS
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { User } from '../entities/user.entity';
@@ -197,7 +197,104 @@ export class ReportService {
       });
     }
 
-    // Return the fully saved report without circular references
+    // Return the ID of the fully saved report
     return savedReport.id;
+  }
+
+  async getReportsByUser(userId: number): Promise<Report[]> {
+    const reports = await this.reportRepository.find({
+      where: {
+        uploader: { id: userId },
+      },
+      relations: [
+        'metadata',
+        'summary',
+        'sections',
+        'sections.metrics',
+        'charts',
+        'chatContexts',
+      ],
+    });
+
+    // Remove circular references from each report
+    reports.forEach(report => {
+      if (report.metadata) {
+        delete report.metadata.report;
+      }
+      if (report.summary) {
+        delete report.summary.report;
+      }
+      if (report.sections && Array.isArray(report.sections)) {
+        report.sections.forEach(section => {
+          delete section.report;
+          if (section.metrics && Array.isArray(section.metrics)) {
+            section.metrics.forEach(metric => delete metric.section);
+          }
+        });
+      }
+      if (report.charts && Array.isArray(report.charts)) {
+        report.charts.forEach(chart => delete chart.report);
+      }
+      if (report.chatContexts && Array.isArray(report.chatContexts)) {
+        report.chatContexts.forEach(context => delete context.report);
+      }
+    });
+
+    return reports;
+  }
+
+  async getReportByUser(userId: number, reportId: number): Promise<Report> {
+    const report = await this.reportRepository.findOne({
+      where: {
+        id: reportId,
+        uploader: { id: userId },
+      },
+      relations: [
+        'metadata',
+        'summary',
+        'sections',
+        'sections.metrics',
+        'charts',
+        'chatContexts',
+      ],
+    });
+
+    if (!report) {
+      throw new NotFoundException(`Report with id ${reportId} for user ${userId} not found`);
+    }
+
+    // Remove circular references
+    if (report.metadata) {
+      delete report.metadata.report;
+    }
+    if (report.summary) {
+      delete report.summary.report;
+    }
+    if (report.sections && Array.isArray(report.sections)) {
+      report.sections.forEach(section => {
+        delete section.report;
+        if (section.metrics && Array.isArray(section.metrics)) {
+          section.metrics.forEach(metric => delete metric.section);
+        }
+      });
+    }
+    if (report.charts && Array.isArray(report.charts)) {
+      report.charts.forEach(chart => delete chart.report);
+    }
+    if (report.chatContexts && Array.isArray(report.chatContexts)) {
+      report.chatContexts.forEach(context => delete context.report);
+    }
+
+    return report;
+  }
+
+  async getReportById(reportId: number): Promise<Report> {
+    const report = await this.reportRepository.findOne({
+      where: { id: reportId },
+    });
+    if (!report) {
+      throw new NotFoundException(`Report with id ${reportId} not found`);
+    }
+    return report;
   }
 }

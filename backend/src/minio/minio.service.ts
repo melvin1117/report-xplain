@@ -1,31 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Client } from 'minio';
 
 @Injectable()
 export class MinioService {
-  private client: Client;
+  private minioClient: Client;  // Use this consistently
 
   constructor() {
-    this.client = new Client({
+    this.minioClient = new Client({
       endPoint: process.env.MINIO_ENDPOINT || 'minio',
-      port: parseInt(process.env.MINIO_PORT) || 9000,
+      port: parseInt(process.env.MINIO_PORT, 10) || 9000,
       useSSL: process.env.MINIO_USE_SSL === 'true',
       accessKey: process.env.MINIO_ROOT_USER || 'minioadmin',
       secretKey: process.env.MINIO_ROOT_PASSWORD || 'minioadmin',
     });
+
+    console.log('Minio client initialized:', this.minioClient); // Debugging
   }
 
-  getClient(): Client {
-    return this.client;
-  }
-
-  // Example method: create bucket if not exists
-  async createBucketIfNotExists(bucketName: string): Promise<void> {
-    const exists = await this.client.bucketExists(bucketName);
-    if (!exists) {
-      await this.client.makeBucket(bucketName, '');
+  async getFileStream(bucketName: string, fileName: string): Promise<NodeJS.ReadableStream> {
+    try {
+      console.log(`Fetching file: ${fileName} from bucket: ${bucketName}`); // Debugging
+      return await this.minioClient.getObject(bucketName, fileName);
+    } catch (error) {
+      console.error('Error fetching file stream from Minio:', error);
+      throw new InternalServerErrorException('Error retrieving file from storage');
     }
   }
 
-  // Add additional helper methods as needed.
+  getClient(): Client {
+    return this.minioClient;
+  }
+
+  async createBucketIfNotExists(bucketName: string): Promise<void> {
+    const exists = await this.minioClient.bucketExists(bucketName);
+    if (!exists) {
+      await this.minioClient.makeBucket(bucketName, '');
+    }
+  }
 }
