@@ -1,0 +1,15 @@
+<mat-toolbar color="primary">
+  <span class="app-title" (click)="router.navigate(['/'])" style="cursor: pointer;">
+    ReportXplain
+  </span>
+  <!-- Otherwise, display the normal login/logout controls -->
+  <ng-container *ngIf="authService.currentUser; else loginOption">
+    <span class="user-info" (click)="router.navigate(['/dashboard'])" style="cursor: pointer;">
+      Welcome, {{ authService.currentUser.name }}
+    </span>
+    <button mat-button (click)="onAuthLogout()">Logout</button>
+  </ng-container>
+  <ng-template #loginOption>
+    <button mat-button (click)="onLogin()">Login</button>
+  </ng-template>
+</mat-toolbar>

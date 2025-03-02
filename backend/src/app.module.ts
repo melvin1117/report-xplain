@@ -16,6 +16,9 @@ import { AppService } from './app.service';
 import { PdfUploadController } from './controllers/pdf-upload';
 import { MinioModule } from './minio/minio.module';
 import { GeminiService } from './services/gemini.service';
+import { AuthController } from './controllers/auth_controller';
+import { AuthService } from './services/auth.service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -55,8 +58,20 @@ import { GeminiService } from './services/gemini.service';
       ChatContext,
     ]),
     MinioModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'SampleSecretKeyHere',
+      signOptions: { expiresIn: '6h' },
+    }),
   ],
-  controllers: [AppController, PdfUploadController],
-  providers: [AppService, GeminiService, ],
+  controllers: [
+                AppController,
+                PdfUploadController,
+                AuthController,
+              ],
+  providers: [
+    AppService,
+    GeminiService,
+    AuthService,
+  ],
 })
-export class AppModule {}
+export class AppModule { }
