@@ -38,7 +38,7 @@ export class ReportService {
     private readonly chatContextRepository: Repository<ChatContext>,
   ) {}
 
-  async createReport(json: any, pdfUrl: string, userId: number): Promise<Report> {
+  async createReport(json: any, pdfUrl: string, userId: number): Promise<number> {
     // 1. Extract top-level fields from JSON
     const {
       reportName,
@@ -198,6 +198,6 @@ export class ReportService {
     }
 
     // Return the fully saved report without circular references
-    return savedReport;
+    return savedReport.id;
   }
 }

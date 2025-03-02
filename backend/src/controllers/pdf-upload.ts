@@ -227,6 +227,6 @@ export class PdfUploadController {
       throw new InternalServerErrorException('Error creating report in DB');
     }
 
-    return { message: 'File processed and report created successfully', data: createdReport };
+    return { message: 'File processed and report created successfully', id: createdReport };
   }
 }
